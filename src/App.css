@@ -20,6 +20,8 @@ header, footer {
 
 header {
   height: calc(15% - 2rem);
+  width: 90%;
+  margin: 0 auto;
 }
 
 header h1 {
@@ -46,8 +48,9 @@ main {
 }
 
 main menu {
-  margin-top: 0;
   padding: 0 1rem;
+  width: 90%;
+  margin: 0 auto 1rem;
 }
 
 main menu ul {
@@ -110,6 +113,11 @@ main textarea {
   width: 90%;
   height: 100%;
   margin: auto;
+}
+
+footer {
+  width: 90%;
+  margin: 0 auto 1rem;
 }
 
 footer button {

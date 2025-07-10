@@ -25,11 +25,15 @@ export default function Main(props) {
     timer(500).pipe(take(1), tap(async () => {
         const scratchpad = getScratchPad();
 
+        scratchpad.focus();
+
         let notes = await StorageService.getNotes();
 
         selectedTab = notes[0] || createNote();
 
         scratchpad.value = selectedTab.text;
+        
+        scratchpad.setSelectionRange(selectedTab.text.length, selectedTab.text.length);
     })).subscribe();
 
     function createNote() {

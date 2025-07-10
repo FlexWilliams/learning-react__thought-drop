@@ -72,4 +72,18 @@ export class StorageService {
             console.error(`Error saving note: ${error}`);
         });
     }
+
+    static exportData() {
+        const items = [
+            this.getNotes()
+        ];
+
+        return Promise.all(items).then((results) => {
+            return {
+                notes: results[0]
+            }
+        }).catch(error => {
+            console.error(`Error exporting data: ${error}`);
+        })
+    }
 }
