@@ -1,19 +1,16 @@
-import './App.css';
-import Footer from './layout/components/Footer';
-import Header from './layout/components/Header';
-import Main from './layout/components/Main';
-import { StorageService } from './storage/storage-service';
+import './App.css'
+import Footer from './layout/components/Footer'
+import Header from './layout/components/Header'
+import Main from './layout/components/Main'
+import { StorageService } from './storage/storage-service'
 
 function App() {
-
-  StorageService.init();
-
-  const data = StorageService.getData();
+  StorageService.init()
 
   return (
     <>
       <Header />
-      <Main data={data} />
+      <Main />
       <Footer />
     </>
   )
