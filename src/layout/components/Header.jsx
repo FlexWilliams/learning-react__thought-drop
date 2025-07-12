@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
-import a from '../../assets/hamburger-icon.svg'
-import Notification from '../../notification/components/Notification'
+import menuIcon from '../../assets/hamburger-icon.svg'
 
 export default function Header(props) {
   useEffect(() => {
@@ -18,8 +17,8 @@ export default function Header(props) {
   return (
     <header>
       <div className='menu'>
-        <button>
-          <img src={a} alt='' />
+        <button aria-label='Open Menu'>
+          <img src={menuIcon} alt='Menu Icon' />
         </button>
         <menu>
           <ul>
@@ -29,10 +28,12 @@ export default function Header(props) {
           </ul>
         </menu>
       </div>
+
       <h1>Thought Drops</h1>
+
       <input name='tab-title' onChange={handleTabTitleChange} />
 
-      <Notification />
+      {/* <Notification /> */}
     </header>
   )
 }

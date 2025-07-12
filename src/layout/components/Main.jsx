@@ -10,6 +10,7 @@ export default function Main(props) {
   const notesCount = useRef(notes.length)
 
   const [activeNote, setActiveNote] = useState(null)
+  const activeNoteRef = useRef(null)
 
   const [noteIdToRemove, setNoteIdToRemove] = useState(null)
 
@@ -40,36 +41,18 @@ export default function Main(props) {
     StorageService.getNotes().then((notesFromDb) => {
       console.debug(`Effect called`)
 
-      const scratchpad = getScratchPad()
-      scratchpad.focus()
+      let notes = notesFromDb.length === 0 ? [StorageService.createNote('New Tab')] : notesFromDb
+      setNotes(notes)
 
-      let note = notesFromDb[0] || StorageService.createNote('New Tab')
-      setNotes(() => (notesFromDb.length === 0 ? [note] : notesFromDb))
-
-      notesCount.current = notesFromDb.length
-
-      setActiveNote(() => note)
-
-      props?.handleTabTitleChange(note.title)
-
-      const text = note?.text
-
-      scratchpad.value = text
-
-      scratchpad.setSelectionRange(text?.length, text?.length)
+      notesCount.current = notes.length
+      updateActiveNote(notes[0])
     })
   }, [])
 
-  function saveText(text) {
-    console.debug(text)
-
-    const note = {
-      ...activeNote,
-      updatedOn: new Date().toISOString(),
-      text,
-    }
-
+  function saveNote(note, preventTextAreaAutoFocus) {
     StorageService.saveNote(note).then((newNote) => {
+      updateActiveNote(newNote, preventTextAreaAutoFocus)
+
       setNotes((currentNotes) => {
         const idx = currentNotes.findIndex((n) => n.id === newNote.id)
         if (idx === -1) {
@@ -85,25 +68,28 @@ export default function Main(props) {
     })
   }
 
-  function saveTabTitle(title) {
-    // TODO: refactor, dupe code
-    StorageService.saveNote({
+  function saveText(text) {
+    const note = {
       ...activeNote,
-      title,
-    }).then((newNote) => {
-      setNotes((currentNotes) => {
-        const idx = currentNotes.findIndex((n) => n.id === newNote.id)
-        if (idx === -1) {
-          return [...currentNotes, newNote]
-        } else {
-          currentNotes[idx] = newNote
+      updatedOn: new Date().toISOString(),
+      text,
+    }
 
-          return [...currentNotes]
-        }
-      })
+    saveNote(note)
+  }
 
-      console.debug(`Finished saving note: ${newNote?.id}`)
-    })
+  function saveTabTitle(title) {
+    if (!activeNoteRef.current || !activeNoteRef.current.id) {
+      return
+    }
+
+    saveNote(
+      {
+        ...activeNoteRef.current,
+        title,
+      },
+      true,
+    )
   }
 
   function getScratchPad() {
@@ -132,8 +118,7 @@ export default function Main(props) {
         setNotes(() => {
           return [note]
         })
-        setActiveNote({ ...note })
-        props.handleTabTitleChange(note?.title)
+        updateActiveNote(note)
       } else {
         let idx = notes.findIndex((n) => n.id === noteIdToRemove)
 
@@ -143,9 +128,7 @@ export default function Main(props) {
 
         if (activeNote?.id === noteIdToRemove) {
           let newActiveNote = idx >= notes.length - 1 ? notes[notes.length - 2] : notes[idx - 1] // TODO: rework, looks ugly but needed because setNotes is async?? and propogates after this line...
-          setActiveNote(newActiveNote)
-          setScratchPadValue(newActiveNote?.text)
-          props.handleTabTitleChange(newActiveNote?.title)
+          updateActiveNote(newActiveNote)
         }
 
         notesCount.current -= 1
@@ -167,21 +150,27 @@ export default function Main(props) {
     togglePopover('confirmation')
   }
 
+  function updateActiveNote(note, preventTextAreaAutoFocus) {
+    setActiveNote({ ...note })
+    activeNoteRef.current = { ...note }
+    setScratchPadValue(note?.text, preventTextAreaAutoFocus)
+    props.handleTabTitleChange(note?.title)
+  }
+
   function handleTabClick(element, noteId) {
     const note = notes.find((n) => n.id === noteId)
-    setActiveNote({ ...note })
-    setScratchPadValue(note?.text)
-    props.handleTabTitleChange(note?.title)
+    updateActiveNote({ ...note })
     element?.scrollIntoView({ behavior: 'smooth', inline: 'center' })
   }
 
-  function setScratchPadValue(text) {
+  function setScratchPadValue(text, preventTextAreaAutoFocus) {
     const scratchpad = getScratchPad()
-    scratchpad.focus()
 
+    if (!preventTextAreaAutoFocus) {
+      scratchpad.focus()
+    }
     scratchpad.value = text
-
-    scratchpad.setSelectionRange(text.length, text.length)
+    scratchpad.setSelectionRange(text?.length, text?.length)
   }
 
   function createNewNote(event) {
@@ -189,14 +178,13 @@ export default function Main(props) {
 
     StorageService.saveNewNote(title).then((newNote) => {
       setNotes((currentNotes) => {
+        debugger
         return [...currentNotes, newNote]
       })
 
       notesCount.current += 1
 
-      setActiveNote({ ...newNote }) // TODO: move these into method, duped code
-      setScratchPadValue(newNote?.text)
-      props.handleTabTitleChange(newNote?.title)
+      updateActiveNote(newNote)
 
       timer(500)
         .pipe(

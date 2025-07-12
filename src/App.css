@@ -165,13 +165,13 @@ dialog.notification {
   border: none;
   background-color: transparent;
 
-   p {
+  p {
     display: flex;
     align-items: center;
     margin: 0;
-    color:black;
-    font-weight: bold;;
+    color: black;
+    font-weight: bold;
     background-color: #cddc39;
     padding: 1rem;
-   }
+  }
 }
