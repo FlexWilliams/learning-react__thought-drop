@@ -25,6 +25,7 @@ header {
   width: 90%;
   margin: 0 auto;
   gap: 1rem;
+  position: relative;
 }
 
 header h1 {
@@ -148,4 +149,29 @@ footer button.export {
 
 footer button.attach {
   background-color: #ffab91;
+}
+
+dialog.notification {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 1rem;
+  width: calc(100% - 2rem);
+  display: flex;
+  /* align-items: center; */
+  justify-content: flex-end;
+  margin: 0;
+  padding: 1rem;
+  border: none;
+  background-color: transparent;
+
+   p {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    color:black;
+    font-weight: bold;;
+    background-color: #cddc39;
+    padding: 1rem;
+   }
 }

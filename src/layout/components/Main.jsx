@@ -16,9 +16,6 @@ export default function Main(props) {
   const saveText$$ = new Subject()
   const saveText$ = saveText$$.asObservable()
 
-  const saveTabTitle$$ = new Subject()
-  const saveTabTitle$ = saveTabTitle$$.asObservable()
-
   saveText$
     .pipe(
       debounceTime(500),
@@ -28,14 +25,16 @@ export default function Main(props) {
     )
     .subscribe()
 
-  saveTabTitle$
-    .pipe(
-      debounceTime(500),
-      tap((title) => {
-        saveTabTitle(title)
-      }),
-    )
-    .subscribe()
+  useEffect(() => {
+    props.saveTabTitle$
+      .pipe(
+        debounceTime(500),
+        tap((title) => {
+          saveTabTitle(title)
+        }),
+      )
+      .subscribe()
+  }, [props.saveTabTitle$])
 
   useEffect(() => {
     StorageService.getNotes().then((notesFromDb) => {
@@ -44,7 +43,7 @@ export default function Main(props) {
       const scratchpad = getScratchPad()
       scratchpad.focus()
 
-      let note = notesFromDb[0] || StorageService.createNote()
+      let note = notesFromDb[0] || StorageService.createNote('New Tab')
       setNotes(() => (notesFromDb.length === 0 ? [note] : notesFromDb))
 
       notesCount.current = notesFromDb.length
@@ -60,17 +59,6 @@ export default function Main(props) {
       scratchpad.setSelectionRange(text?.length, text?.length)
     })
   }, [])
-
-  useEffect(() => {
-    if (!activeNote) {
-      return
-    }
-
-    // TODO: figure out how to get debounceTime working
-    // saving happens on each key stroke,
-    // may require you to remove reactivity from input in header.
-    saveTabTitle$$.next(props.tabTitle)
-  }, [props.tabTitle])
 
   function saveText(text) {
     console.debug(text)
