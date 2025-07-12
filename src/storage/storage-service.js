@@ -62,6 +62,7 @@ export class StorageService {
             ...existingNotes[existingNoteIndex],
             updatedOn: note.updatedOn,
             text: note.text,
+            title: note.title,
           }
           existingNotes[existingNoteIndex] = note
         } else {

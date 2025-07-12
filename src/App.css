@@ -24,6 +24,7 @@ header {
   height: calc(15% - 2rem);
   width: 90%;
   margin: 0 auto;
+  gap: 1rem;
 }
 
 header h1 {
@@ -41,6 +42,12 @@ header div.menu button img {
 
 header menu {
   display: none;
+}
+
+header input {
+  height: 2rem;
+  margin: 0;
+  flex: 2;
 }
 
 main {
@@ -89,6 +96,10 @@ main menu ul li button.tab {
   width: 100%;
   height: 100%;
   font-size: 1rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 6rem;
 }
 
 main menu ul li button.tab:first-of-type {

@@ -4,7 +4,7 @@ import ConfirmationModal from '../../modal/components/ConfirmationModal'
 import ScratchpadTabs from '../../scratchpad/components/ScratchpadTabs'
 import { StorageService } from '../../storage/storage-service'
 
-export default function Main() {
+export default function Main(props) {
   const [notes, setNotes] = useState([])
 
   const notesCount = useRef(notes.length)
@@ -16,11 +16,23 @@ export default function Main() {
   const saveText$$ = new Subject()
   const saveText$ = saveText$$.asObservable()
 
+  const saveTabTitle$$ = new Subject()
+  const saveTabTitle$ = saveTabTitle$$.asObservable()
+
   saveText$
     .pipe(
       debounceTime(500),
       tap((text) => {
         saveText(text)
+      }),
+    )
+    .subscribe()
+
+  saveTabTitle$
+    .pipe(
+      debounceTime(500),
+      tap((title) => {
+        saveTabTitle(title)
       }),
     )
     .subscribe()
@@ -39,6 +51,8 @@ export default function Main() {
 
       setActiveNote(() => note)
 
+      props?.handleTabTitleChange(note.title)
+
       const text = note?.text
 
       scratchpad.value = text
@@ -46,6 +60,17 @@ export default function Main() {
       scratchpad.setSelectionRange(text?.length, text?.length)
     })
   }, [])
+
+  useEffect(() => {
+    if (!activeNote) {
+      return
+    }
+
+    // TODO: figure out how to get debounceTime working
+    // saving happens on each key stroke,
+    // may require you to remove reactivity from input in header.
+    saveTabTitle$$.next(props.tabTitle)
+  }, [props.tabTitle])
 
   function saveText(text) {
     console.debug(text)
@@ -57,6 +82,27 @@ export default function Main() {
     }
 
     StorageService.saveNote(note).then((newNote) => {
+      setNotes((currentNotes) => {
+        const idx = currentNotes.findIndex((n) => n.id === newNote.id)
+        if (idx === -1) {
+          return [...currentNotes, newNote]
+        } else {
+          currentNotes[idx] = newNote
+
+          return [...currentNotes]
+        }
+      })
+
+      console.debug(`Finished saving note: ${newNote?.id}`)
+    })
+  }
+
+  function saveTabTitle(title) {
+    // TODO: refactor, dupe code
+    StorageService.saveNote({
+      ...activeNote,
+      title,
+    }).then((newNote) => {
       setNotes((currentNotes) => {
         const idx = currentNotes.findIndex((n) => n.id === newNote.id)
         if (idx === -1) {
@@ -99,6 +145,7 @@ export default function Main() {
           return [note]
         })
         setActiveNote({ ...note })
+        props.handleTabTitleChange(note?.title)
       } else {
         let idx = notes.findIndex((n) => n.id === noteIdToRemove)
 
@@ -107,9 +154,10 @@ export default function Main() {
         })
 
         if (activeNote?.id === noteIdToRemove) {
-          let newActiveNote = idx >= notes.length - 1 ? notes[notes.length - 2] : notes[idx]
+          let newActiveNote = idx >= notes.length - 1 ? notes[notes.length - 2] : notes[idx - 1] // TODO: rework, looks ugly but needed because setNotes is async?? and propogates after this line...
           setActiveNote(newActiveNote)
           setScratchPadValue(newActiveNote?.text)
+          props.handleTabTitleChange(newActiveNote?.title)
         }
 
         notesCount.current -= 1
@@ -135,6 +183,7 @@ export default function Main() {
     const note = notes.find((n) => n.id === noteId)
     setActiveNote({ ...note })
     setScratchPadValue(note?.text)
+    props.handleTabTitleChange(note?.title)
     element?.scrollIntoView({ behavior: 'smooth', inline: 'center' })
   }
 
@@ -157,8 +206,9 @@ export default function Main() {
 
       notesCount.current += 1
 
-      setActiveNote({ ...newNote })
+      setActiveNote({ ...newNote }) // TODO: move these into method, duped code
       setScratchPadValue(newNote?.text)
+      props.handleTabTitleChange(newNote?.title)
 
       timer(500)
         .pipe(

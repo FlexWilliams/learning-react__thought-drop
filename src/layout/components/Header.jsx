@@ -1,6 +1,11 @@
 import a from '../../assets/hamburger-icon.svg'
 
-export default function Header() {
+export default function Header(props) {
+  function handleTabTitleChange(event) {
+    const value = event?.target?.value
+    props.handleTabTitleChange(value)
+  }
+
   return (
     <header>
       <div className='menu'>
@@ -16,6 +21,7 @@ export default function Header() {
         </menu>
       </div>
       <h1>Thought Drops</h1>
+      <input name='tab-title' value={props.tabTitle} onChange={handleTabTitleChange} />
     </header>
   )
 }
