@@ -1,6 +1,6 @@
 import { StorageService } from '../../storage/storage-service'
 
-export default function Footer() {
+export default function Footer(props) {
   function exportData() {
     StorageService.exportData()
       .then((data) => {
@@ -20,6 +20,9 @@ export default function Footer() {
 
   return (
     <footer>
+      <button className='history' onClick={props?.showHistory}>
+        History
+      </button>
       <button className='export' onClick={exportData}>
         Export
       </button>

@@ -9,6 +9,7 @@ body {
 #root {
   max-width: 1280px;
   height: 100%;
+  position: relative;
 }
 
 header,
@@ -22,7 +23,6 @@ footer {
 
 header {
   height: calc(15% - 2rem);
-  width: 90%;
   margin: 0 auto;
   gap: 1rem;
   position: relative;
@@ -57,13 +57,13 @@ main {
   height: 65%;
 }
 
-main menu {
+menu {
   padding: 0 1rem;
   width: 90%;
   margin: 0 auto 1rem;
 }
 
-main menu ul {
+menu ul {
   display: flex;
   width: 100%;
   overflow-x: auto;
@@ -72,7 +72,7 @@ main menu ul {
   padding: 0;
 }
 
-main menu ul li {
+menu ul li {
   min-width: 6rem;
   min-height: 3rem;
   background-color: #4caf50;
@@ -85,12 +85,12 @@ main menu ul li {
   position: relative;
 }
 
-main menu ul li.active {
+menu ul li.active {
   background-color: #cddc39;
   font-weight: bold;
 }
 
-main menu ul li button.tab {
+menu ul li button.tab {
   background-color: transparent;
   border: none;
   color: black;
@@ -103,11 +103,18 @@ main menu ul li button.tab {
   max-width: 6rem;
 }
 
-main menu ul li button.tab:first-of-type {
+menu ul li button.date-title {
+  white-space-collapse: break-spaces;
+  text-wrap-mode: nowrap;
+  font-size: 0.75rem;
+  height: 100%;
+}
+
+menu ul li button.tab:first-of-type {
   font-weight: bold;
 }
 
-main menu ul li button.close-tab {
+menu ul li button.close-tab {
   background-color: black;
   color: white;
   width: 1rem;
@@ -130,8 +137,8 @@ main textarea {
 }
 
 footer {
-  width: 90%;
   margin: 0 auto 1rem;
+  position: relative;
 }
 
 footer button {
@@ -141,6 +148,15 @@ footer button {
   border-radius: 0.25rem;
   color: black;
   font-weight: bold;
+}
+
+footer button.history {
+  position: absolute;
+  top: 0rem;
+  right: 1rem;
+  background-color: transparent;
+  color: aqua;
+  text-decoration: underline;
 }
 
 footer button.export {
@@ -174,4 +190,58 @@ dialog.notification {
     background-color: #cddc39;
     padding: 1rem;
   }
+}
+
+article.note-history {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  background-color: #ffffff8a;
+}
+
+article.note-history div {
+  display: flex;
+  flex-direction: column;
+  height: 65%;
+  background-color: white;
+}
+
+article.note-history p {
+  text-align: center;
+  color: black;
+  font-weight: bold;
+}
+
+article.note-history textarea {
+  width: 90%;
+  height: 100%;
+  margin: auto;
+}
+
+article.note-history button {
+  background-color: #cddc39;
+  color: black;
+}
+
+article.note-history button.restore {
+  min-width: 5rem;
+  min-height: 2.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: bold;
+}
+
+article.note-history button.close {
+  min-width: 5rem;
+  min-height: 2.5rem;
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: bold;
+  position: absolute;
+  top: 0;
+  right: 1rem;
+  text-decoration: underline;
 }

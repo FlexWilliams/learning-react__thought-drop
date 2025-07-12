@@ -37,6 +37,17 @@ export class StorageService {
       })
   }
 
+  static getHistoricalNotes(noteId) {
+    return localforage
+      .getItem(`NOTES.${noteId}`)
+      .then((existingNotes) => {
+        return existingNotes && existingNotes.length > 0 ? existingNotes : []
+      })
+      .catch((error) => {
+        console.error(`Error fetching notes ${error}`)
+      })
+  }
+
   static saveNotes(newNotes) {
     return localforage
       .setItem(`NOTES`, newNotes)
@@ -52,34 +63,77 @@ export class StorageService {
     return this.saveNote(this.createNote(title))
   }
 
-  static saveNote(note) {
-    return this.getNotes()
-      .then((existingNotes) => {
-        const existingNoteIndex = existingNotes.findIndex((e) => e.id === note.id)
+  static getNoteHistory(noteId) {
+    return localforage
+      .getItem(`NOTES.${noteId}`)
+      .then((notes) => {
+        return notes || []
+      })
+      .catch((error) => {
+        console.error(`Error getting historical notes: ${error}`)
+      })
+  }
 
-        if (existingNoteIndex !== -1) {
-          note = {
-            ...existingNotes[existingNoteIndex],
-            ...note,
-          }
-          existingNotes[existingNoteIndex] = note
-        } else {
-          if (!note.id) {
-            note.id = crypto.randomUUID()
-          }
+  static saveNoteToHistory(note, preventSaveHistory) {
+    if (preventSaveHistory) {
+      return Promise.resolve()
+    }
 
-          existingNotes.push(note)
-        }
-        return this.saveNotes(existingNotes)
-          .then((notes) => {
-            return notes.find((n) => n.id === note.id)
+    return this.getNoteHistory(note.id)
+      .then((notes) => {
+        return localforage
+          .setItem(`NOTES.${note.id}`, [note, ...notes])
+          .then((historicalNotes) => {
+            return historicalNotes
+          })
+          .catch((error) => {
+            console.error(`Error saving historical notes: ${error}`)
+          })
+      })
+      .catch((error) => {
+        console.error(`Error saving historical notes: ${error}`)
+      })
+  }
+
+  static saveNote(note, preventSaveHistory) {
+    note = {
+      ...note,
+      historyId: crypto.randomUUID(),
+    }
+
+    return this.saveNoteToHistory(note, preventSaveHistory)
+      .then(() => {
+        return this.getNotes()
+          .then((existingNotes) => {
+            const existingNoteIndex = existingNotes.findIndex((e) => e.id === note.id)
+
+            if (existingNoteIndex !== -1) {
+              note = {
+                ...existingNotes[existingNoteIndex],
+                ...note,
+              }
+              existingNotes[existingNoteIndex] = note
+            } else {
+              if (!note.id) {
+                note.id = crypto.randomUUID()
+              }
+
+              existingNotes.push(note)
+            }
+            return this.saveNotes(existingNotes)
+              .then((notes) => {
+                return notes.find((n) => n.id === note.id)
+              })
+              .catch((error) => {
+                console.error(`Error saving note: ${error}`)
+              })
           })
           .catch((error) => {
             console.error(`Error saving note: ${error}`)
           })
       })
       .catch((error) => {
-        console.error(`Error saving note: ${error}`)
+        console.error(`Error saving note`)
       })
   }
 

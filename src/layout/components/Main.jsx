@@ -20,8 +20,8 @@ export default function Main(props) {
   saveText$
     .pipe(
       debounceTime(500),
-      tap(([text, cursorPosition]) => {
-        saveText(text, cursorPosition)
+      tap(([text, cursorPosition, preventSaveHistory]) => {
+        saveText(text, cursorPosition, preventSaveHistory)
       }),
     )
     .subscribe()
@@ -49,8 +49,8 @@ export default function Main(props) {
     })
   }, [])
 
-  function saveNote(note, preventTextAreaAutoFocus) {
-    StorageService.saveNote(note).then((newNote) => {
+  function saveNote(note, preventTextAreaAutoFocus, preventSaveHistory) {
+    StorageService.saveNote(note, preventSaveHistory).then((newNote) => {
       updateActiveNote(newNote, preventTextAreaAutoFocus)
 
       setNotes((currentNotes) => {
@@ -68,7 +68,7 @@ export default function Main(props) {
     })
   }
 
-  function saveText(text, cursorPosition) {
+  function saveText(text, cursorPosition, preventSaveHistory) {
     cursorPosition = cursorPosition ? cursorPosition : text?.length > 0 ? text.length - 1 : 0
 
     const note = {
@@ -78,7 +78,7 @@ export default function Main(props) {
       cursorPosition,
     }
 
-    saveNote(note, true)
+    saveNote(note, true, preventSaveHistory)
   }
 
   function saveTabTitle(title) {
@@ -158,6 +158,7 @@ export default function Main(props) {
     activeNoteRef.current = { ...note }
     setScratchPadValue(note, preventTextAreaAutoFocus)
     props.handleTabTitleChange(note?.title)
+    props?.handleActiveNoteChange({ ...note })
   }
 
   function handleTabClick(element, noteId) {
@@ -178,7 +179,7 @@ export default function Main(props) {
 
   function updateCursorPosition() {
     const scratchpad = getScratchPad()
-    saveText$$.next([scratchpad.value, scratchpad.selectionStart])
+    saveText$$.next([scratchpad.value, scratchpad.selectionStart, true])
   }
 
   function handleClick() {
@@ -235,6 +236,8 @@ export default function Main(props) {
           handleTabClick={handleTabClick}
           handleRemoveNote={handleRemoveNote}
           createNewNote={createNewNote}
+          includeCreateNewTabButton={true}
+          keyId={'id'}
         />
       ) : (
         <></>
