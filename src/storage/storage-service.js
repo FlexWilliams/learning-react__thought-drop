@@ -60,9 +60,7 @@ export class StorageService {
         if (existingNoteIndex !== -1) {
           note = {
             ...existingNotes[existingNoteIndex],
-            updatedOn: note.updatedOn,
-            text: note.text,
-            title: note.title,
+            ...note,
           }
           existingNotes[existingNoteIndex] = note
         } else {

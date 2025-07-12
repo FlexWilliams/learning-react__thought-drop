@@ -20,8 +20,8 @@ export default function Main(props) {
   saveText$
     .pipe(
       debounceTime(500),
-      tap((text) => {
-        saveText(text)
+      tap(([text, cursorPosition]) => {
+        saveText(text, cursorPosition)
       }),
     )
     .subscribe()
@@ -68,14 +68,17 @@ export default function Main(props) {
     })
   }
 
-  function saveText(text) {
+  function saveText(text, cursorPosition) {
+    cursorPosition = cursorPosition ? cursorPosition : text?.length > 0 ? text.length - 1 : 0
+
     const note = {
       ...activeNote,
       updatedOn: new Date().toISOString(),
       text,
+      cursorPosition,
     }
 
-    saveNote(note)
+    saveNote(note, true)
   }
 
   function saveTabTitle(title) {
@@ -104,7 +107,7 @@ export default function Main(props) {
 
   function handleChange() {
     const scratchpad = getScratchPad()
-    saveText$$.next(scratchpad.value)
+    saveText$$.next([scratchpad.value, scratchpad.selectionStart])
   }
 
   function handleConfirmationYes() {
@@ -153,7 +156,7 @@ export default function Main(props) {
   function updateActiveNote(note, preventTextAreaAutoFocus) {
     setActiveNote({ ...note })
     activeNoteRef.current = { ...note }
-    setScratchPadValue(note?.text, preventTextAreaAutoFocus)
+    setScratchPadValue(note, preventTextAreaAutoFocus)
     props.handleTabTitleChange(note?.title)
   }
 
@@ -163,14 +166,23 @@ export default function Main(props) {
     element?.scrollIntoView({ behavior: 'smooth', inline: 'center' })
   }
 
-  function setScratchPadValue(text, preventTextAreaAutoFocus) {
+  function setScratchPadValue(note, preventTextAreaAutoFocus) {
     const scratchpad = getScratchPad()
 
     if (!preventTextAreaAutoFocus) {
       scratchpad.focus()
     }
-    scratchpad.value = text
-    scratchpad.setSelectionRange(text?.length, text?.length)
+    scratchpad.value = note?.text
+    scratchpad.setSelectionRange(note?.cursorPosition || 0, note?.cursorPosition || 0)
+  }
+
+  function updateCursorPosition() {
+    const scratchpad = getScratchPad()
+    saveText$$.next([scratchpad.value, scratchpad.selectionStart])
+  }
+
+  function handleClick() {
+    updateCursorPosition()
   }
 
   function createNewNote(event) {
@@ -178,7 +190,6 @@ export default function Main(props) {
 
     StorageService.saveNewNote(title).then((newNote) => {
       setNotes((currentNotes) => {
-        debugger
         return [...currentNotes, newNote]
       })
 
@@ -228,7 +239,7 @@ export default function Main(props) {
       ) : (
         <></>
       )}
-      <textarea name='scratchpad' onChange={handleChange}></textarea>
+      <textarea name='scratchpad' onChange={handleChange} onClick={handleClick}></textarea>
 
       <ConfirmationModal handleYes={handleConfirmationYes} handleNo={handleConfirmationNo} />
     </main>
