@@ -17,23 +17,16 @@ export default function Header(props) {
   return (
     <header>
       <div className='menu'>
-        <button aria-label='Open Menu'>
+        <button aria-label='Open Menu' onClick={props?.handleOpenSidebar}>
           <img src={menuIcon} alt='Menu Icon' />
         </button>
-        <menu>
-          <ul>
-            <li>Todos</li>
-            <li>Groceries</li>
-            <li>Notes</li>
-          </ul>
-        </menu>
       </div>
 
       <h1>Thought Drops</h1>
 
-      <input name='tab-title' onChange={handleTabTitleChange} />
-
-      {/* <Notification /> */}
+      {props?.activeNavItem === 'Notes' && (
+        <input name='tab-title' onChange={handleTabTitleChange} />
+      )}
     </header>
   )
 }
