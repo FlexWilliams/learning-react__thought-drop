@@ -1,3 +1,5 @@
+import { StorageService } from '../../storage/storage-service'
+
 export default function NotesFooter(props) {
   function exportData() {
     StorageService.exportData()
